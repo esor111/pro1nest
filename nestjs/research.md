@@ -1,0 +1,1 @@
+.leftjoin and leftjoin adn select ko code ma hernry
