@@ -9,5 +9,5 @@ export class RolePermission extends Base{
 role: Role;
 
 @ManyToOne(()=>Permission)
-permission: Permission
+permission: Permission;
 }

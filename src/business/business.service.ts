@@ -122,4 +122,8 @@ return await this.businessRepo.findOne({where:{id:businessId}})
   remove(id: number) {
     return `This action removes a #${id} business`;
   }
+
+  removss(id: number) {
+    return `This action removes a #${id} business`;
+  }
 }
