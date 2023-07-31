@@ -6,8 +6,8 @@ import { Base } from "src/domain/base.entity";
 @Entity()
 export class RolePermission extends Base{
 @ManyToOne(()=> Role)
-role: Role;
+role: Role
 
 @ManyToOne(()=>Permission)
-permission: Permission;
+permission: Permission
 }
