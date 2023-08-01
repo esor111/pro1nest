@@ -10,4 +10,4 @@ export class BusinessRole extends Base {
 
   @ManyToOne(()=> RolePermission)
   public rolepermission: RolePermission;
-}  
+}

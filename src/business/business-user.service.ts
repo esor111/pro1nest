@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import {
   addUsertoBusinessDto,
   assignRoleDto,
+  removebusinessuserDto,
 } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +15,7 @@ import { UserService } from 'src/user/user.service';
 import { RolePermission } from 'src/permission/entities/role.permission.entity';
 import { BusinessUserRepository } from './entities/business-user.repository';
 import { BusinessService } from './business.service';
+import { In } from 'typeorm';
 
 @Injectable()
 export class BusinessUserService {
@@ -159,24 +161,61 @@ export class BusinessUserService {
     }
     let allroles = [];
     data?.businessrole.map((each) => {
-      //  console.log(each)
-      let roleper = each.rolepermission.role.name;
-      if (roleper) {
-        throw new HttpException('ohh man what', 404);
-      }
+      console.log(each);
+      let roleper = each?.rolepermission?.role?.name;
+      // if (!roleper) {
+      //   throw new HttpException('ohh man what', 404);
+      // }
       allroles.push(roleper);
-      console.log(roleper);
     });
-    console.log(allroles);
     const isinclude = allroles.find((role) => role === name);
     return isinclude;
   }
 
-  update(id: number, updateBusinessDto: UpdateBusinessDto) {
-    return `This action updates a #${id} business`;
+  async removeBusinessUser(removeuserdto: removebusinessuserDto): Promise<any> {
+    const { userId, businessId } = removeuserdto;
+    const user = await this.userservice.findOneById3(userId);
+    if (!user) {
+      throw new HttpException(`User not found for`, 404);
+    }
+    const businessuser =
+      await this.businessuserRepository.findOneBusinessUserwithRole(
+        userId,
+        businessId,
+      );
+    if (!businessuser) {
+      throw new HttpException(`business-user not found for`, 404);
+    }
+
+    const isSuperadmin = this.checkincludeornot(businessuser, 'super_admin');
+    if (isSuperadmin) {
+      throw new HttpException('you cannot remove yourself', 409);
+    }
+    const { id } = businessuser;
+
+    await this.remove(id);
+    await this.deleManyBusinessRoles(id);
+    return {
+      message: `user has been removed from the business`,
+    };
   }
 
   remove(id: number) {
-    return `This action removes a #${id} business`;
+    return this.businessuserRepo.delete(id);
+  }
+
+  async deleManyBusinessRoles(buserId: number) {
+    return await this.businessRoleRepo.delete({
+      businessuser: { id: buserId },
+    });
+  }
+
+  //  findManyByBusinessIds
+
+  async findManybusinessUser(busineessIdes: number[]) {
+    const businessusers = await this.businessuserRepo.find({
+      where: { business: { id: In(busineessIdes) } },
+    });
+    return businessusers;
   }
 }

@@ -4,6 +4,7 @@ import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsInt,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
@@ -96,4 +97,22 @@ export class assignRoleDto{
   @ApiProperty()
   @IsNumberString()
   businessId:number
+}
+
+
+export class removebusinessuserDto{
+  @ApiProperty({required: true})
+  @IsNumberString()
+  userId:number
+  
+  @ApiProperty()
+  @IsNumberString()
+  businessId:number
+}
+
+export class businessIdesDto{
+  @ApiProperty()
+  @IsArray()
+  @IsInt({each: true})
+  public businessIdes: number[];
 }

@@ -8,19 +8,23 @@ import {
   Delete,
   UseGuards,
   Query,
+  HttpException,
 } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import {
   CreateBusinessDto,
   addUsertoBusinessDto,
   assignRoleDto,
+  businessIdesDto,
+  removebusinessuserDto,
 } from './dto/create-business.dto';
-import { UpdateBusinessDto } from './dto/update-business.dto';                             
+import { UpdateBusinessDto } from './dto/update-business.dto';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { JwtUserDecorator } from 'src/user/user.decorators';
 import { BusinessUserService } from './business-user.service';
 import { IsBusinessAdmin } from 'src/guard/isAuthorizedToModifyBusinessUser.guards';
+import { BusinessUserRepository } from './entities/business-user.repository';
 
 @ApiTags('business')
 @Controller('business')
@@ -28,6 +32,7 @@ export class BusinessController {
   constructor(
     private readonly businessService: BusinessService,
     private readonly businessuserService: BusinessUserService,
+    private readonly businessUserRepo: BusinessUserRepository,
   ) {}
 
   @Post()
@@ -41,9 +46,9 @@ export class BusinessController {
   }
 
   @Post('adduser/:userid')
-  // @ApiBearerAuth()
-  // @UseGuards(IsBusinessAdmin)
-  // @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @UseGuards(IsBusinessAdmin)
+  @UseGuards(AuthGuard('jwt'))
   async addbusinessUser(
     @Body() adduser: addUsertoBusinessDto,
 
@@ -52,10 +57,9 @@ export class BusinessController {
     return this.businessService.addbusinessUser(adduser, 9, userId);
   }
 
-
-  @Post("main.")
-  async finallbusinessUser(){
-    return this.businessuserService.finallbusinessUser()
+  @Post('main.')
+  async finallbusinessUser() {
+    return this.businessuserService.finallbusinessUser();
   }
 
   @Get('businessuser/getone')
@@ -63,7 +67,10 @@ export class BusinessController {
     @Query('userid') userId: number,
     @Query('businessid') businessId: number,
   ) {
-    return this.businessuserService.findOneBusinessUser(businessId, userId);
+    return this.businessUserRepo.findOneBusinessUserwithRole(
+      businessId,
+      userId,
+    );
   }
 
   @Get()
@@ -89,12 +96,26 @@ export class BusinessController {
     return this.businessuserService.assignRole(assignroledto);
   }
 
+  @Post('remove/:businessId')
+  @ApiBearerAuth()
+  @UseGuards(IsBusinessAdmin)
+  @UseGuards(AuthGuard('jwt'))
+  async removeBusinessUser(@Body() removeuserdto: removebusinessuserDto) {
+    return await this.businessuserService.removeBusinessUser(removeuserdto);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() updateBusinessDto: UpdateBusinessDto,
   ) {
     return this.businessService.update(+id, updateBusinessDto);
+  }
+
+  @Get("business-users")
+  findManybusinessUser(@Query() businessidesdto: businessIdesDto) {
+    const businessIdes = businessidesdto.businessIdes;
+    return this.businessuserService.findManybusinessUser(businessIdes);
   }
 
   @Delete(':id')

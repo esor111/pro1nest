@@ -98,8 +98,7 @@ export class BusinessService {
   }
 
 async finallbusinessUser():Promise<any>{
- const data = await this.businessuserRepository.findBusinessUserWithRawQuery()
- console.log({data})
+ const data = await this.businessuserRepository.findBusinessUser()
  return data
 }
 
